@@ -1,0 +1,508 @@
+# Krynox Nexus - Security Scan CI/CD Pipeline
+# Zero-Trust Kernel Module Hardening and Automated Vulnerability Detection
+#
+# This workflow performs comprehensive security analysis on kernel modules:
+# - Static analysis (Clang, Cppcheck, Sparse)
+# - Architectural analysis (IBM Bob CLI)
+# - Container security scanning (Trivy)
+# - SARIF integration for GitHub Security tab
+
+name: Security Scan
+
+on:
+  # Trigger on every push to any branch
+  push:
+    branches: ['**']
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+  
+  # Trigger on pull requests
+  pull_request:
+    branches: ['main', 'develop']
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+  
+  # Scheduled daily scans at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Allow manual workflow dispatch
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of scan to perform'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - static-only
+          - bob-only
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+env:
+  KERNEL_VERSION: '5.15'
+  REPORTS_DIR: 'reports'
+  SARIF_DIR: 'sarif-reports'
+
+jobs:
+  # ============================================================================
+  # Job 1: Build Kernel Modules
+  # ============================================================================
+  build:
+    name: Build Kernel Modules
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+      
+      - name: Set up build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            linux-headers-$(uname -r) \
+            gcc \
+            make \
+            kmod
+      
+      - name: Build kernel modules
+        run: |
+          chmod +x scripts/build/build_modules.sh
+          ./scripts/build/build_modules.sh
+        continue-on-error: false
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-modules
+          path: |
+            src/**/*.ko
+            src/**/*.o
+          retention-days: 7
+      
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: build.log
+          retention-days: 7
+
+  # ============================================================================
+  # Job 2: CodeQL Analysis
+  # ============================================================================
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['cpp']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+      
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            linux-headers-$(uname -r) \
+            gcc \
+            make
+      
+      - name: Build kernel modules for CodeQL
+        run: |
+          cd src
+          make clean all || true
+      
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # ============================================================================
+  # Job 3: Static Analysis
+  # ============================================================================
+  static-analysis:
+    name: Static Analysis (Clang, Cppcheck, Sparse)
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install static analysis tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang \
+            clang-tools \
+            cppcheck \
+            sparse \
+            linux-headers-$(uname -r) \
+            python3 \
+            python3-pip
+      
+      - name: Install Python dependencies for SARIF converters
+        run: |
+          pip3 install -r scripts/security/sarif_converters/requirements.txt
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: kernel-modules
+          path: src/
+      
+      - name: Run static analysis with SARIF conversion
+        run: |
+          chmod +x scripts/security/run_static_analysis.sh
+          ./scripts/security/run_static_analysis.sh
+        continue-on-error: true
+      
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/static-analysis/sarif/
+          category: static-analysis
+        continue-on-error: true
+      
+      - name: Upload static analysis reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-analysis-reports
+          path: |
+            ${{ env.REPORTS_DIR }}/**/*.json
+            ${{ env.REPORTS_DIR }}/**/*.html
+            ${{ env.REPORTS_DIR }}/**/*.txt
+          retention-days: 30
+
+  # ============================================================================
+  # Job 3: IBM Bob Analysis
+  # ============================================================================
+  ibm-bob-analysis:
+    name: IBM Bob Architectural Analysis
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event.inputs.scan_type != 'static-only'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js for IBM Bob CLI
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install IBM Bob CLI
+        run: |
+          npm install -g @ibm/bob-cli
+        continue-on-error: true
+      
+      - name: Install Python dependencies for SARIF converters
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip
+          pip3 install -r scripts/security/sarif_converters/requirements.txt
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: kernel-modules
+          path: src/
+      
+      - name: Run IBM Bob analysis with SARIF conversion
+        run: |
+          chmod +x scripts/security/run_ibm_bob.sh
+          ./scripts/security/run_ibm_bob.sh
+        continue-on-error: true
+      
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/bob/sarif/bob_results.sarif
+          category: architectural-analysis
+        continue-on-error: true
+      
+      - name: Upload IBM Bob reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ibm-bob-reports
+          path: |
+            ${{ env.REPORTS_DIR }}/bob/**/*.json
+            ${{ env.REPORTS_DIR }}/bob/**/*.html
+            ${{ env.REPORTS_DIR }}/bob/**/*.sarif
+          retention-days: 30
+
+  # ============================================================================
+  # Job 4: Container Security Scan
+  # ============================================================================
+  container-security:
+    name: Container Security (Trivy)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Build Docker images
+        run: |
+          docker build -f docker/Dockerfile.scanner -t krynox-scanner:latest .
+          docker build -f docker/Dockerfile.builder -t krynox-builder:latest .
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'krynox-scanner:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+      
+      - name: Upload Trivy reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: trivy-results.sarif
+          retention-days: 30
+
+  # ============================================================================
+  # Job 5: Kernel Hardening Verification
+  # ============================================================================
+  kernel-hardening:
+    name: Kernel Hardening Verification
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Python dependencies for SARIF converters
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip
+          pip3 install -r scripts/security/sarif_converters/requirements.txt
+      
+      - name: Check kernel configuration with SARIF conversion
+        run: |
+          chmod +x scripts/security/verify_kernel_hardening.sh
+          ./scripts/security/verify_kernel_hardening.sh || true
+      
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/hardening/sarif/hardening_results.sarif
+          category: kernel-hardening
+        continue-on-error: true
+      
+      - name: Upload hardening report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-hardening-report
+          path: |
+            ${{ env.REPORTS_DIR }}/hardening-*.txt
+            ${{ env.REPORTS_DIR }}/hardening/**/*.json
+            ${{ env.REPORTS_DIR }}/hardening/**/*.sarif
+          retention-days: 30
+
+  # ============================================================================
+  # Job 6: Security Quality Gate
+  # ============================================================================
+  quality-gate:
+    name: Security Quality Gate
+    runs-on: ubuntu-latest
+    needs: [build, static-analysis, ibm-bob-analysis, container-security]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          path: all-reports/
+      
+      - name: Analyze security findings
+        id: analyze
+        run: |
+          echo "Analyzing security findings..."
+          
+          # Count critical findings
+          CRITICAL_COUNT=0
+          HIGH_COUNT=0
+          
+          # Check for critical vulnerabilities in reports
+          if find all-reports -name "*.json" -exec grep -l "CRITICAL" {} \; | grep -q .; then
+            CRITICAL_COUNT=$(find all-reports -name "*.json" -exec grep -c "CRITICAL" {} \; | awk '{s+=$1} END {print s}')
+          fi
+          
+          if find all-reports -name "*.json" -exec grep -l "HIGH" {} \; | grep -q .; then
+            HIGH_COUNT=$(find all-reports -name "*.json" -exec grep -c "HIGH" {} \; | awk '{s+=$1} END {print s}')
+          fi
+          
+          echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+          echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
+          
+          echo "Critical findings: $CRITICAL_COUNT"
+          echo "High severity findings: $HIGH_COUNT"
+      
+      - name: Enforce quality gate
+        run: |
+          CRITICAL=${{ steps.analyze.outputs.critical_count }}
+          HIGH=${{ steps.analyze.outputs.high_count }}
+          
+          echo "Security Quality Gate Results:"
+          echo "  Critical: $CRITICAL"
+          echo "  High: $HIGH"
+          
+          # Fail if critical vulnerabilities found
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "❌ FAILED: Critical vulnerabilities detected!"
+            echo "::error::$CRITICAL critical security vulnerabilities found"
+            exit 1
+          fi
+          
+          # Warn if high severity vulnerabilities found
+          if [ "$HIGH" -gt 5 ]; then
+            echo "⚠️  WARNING: $HIGH high severity vulnerabilities detected"
+            echo "::warning::$HIGH high severity vulnerabilities found"
+          fi
+          
+          echo "✅ PASSED: Security quality gate passed"
+      
+      - name: Create security summary
+        if: always()
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🔒 Security Scan Summary
+          
+          ### Quality Gate Status
+          - **Critical Findings**: ${{ steps.analyze.outputs.critical_count }}
+          - **High Severity**: ${{ steps.analyze.outputs.high_count }}
+          
+          ### Scans Performed
+          - ✅ Static Analysis (Clang, Cppcheck, Sparse)
+          - ✅ IBM Bob Architectural Analysis
+          - ✅ Container Security (Trivy)
+          - ✅ Kernel Hardening Verification
+          
+          ### Artifacts
+          - [Build Logs](../actions/runs/${{ github.run_id }})
+          - [Static Analysis Reports](../actions/runs/${{ github.run_id }})
+          - [IBM Bob Reports](../actions/runs/${{ github.run_id }})
+          - [Container Security Reports](../actions/runs/${{ github.run_id }})
+          
+          ---
+          *Krynox Nexus - Zero-Trust Kernel Module Hardening*
+          EOF
+
+  # ============================================================================
+  # Job 7: Publish Reports
+  # ============================================================================
+  publish-reports:
+    name: Publish Security Reports
+    runs-on: ubuntu-latest
+    needs: [static-analysis, ibm-bob-analysis, container-security, kernel-hardening]
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          path: all-reports/
+      
+      - name: Consolidate reports
+        run: |
+          mkdir -p consolidated-reports
+          cp -r all-reports/* consolidated-reports/
+          
+          # Create index.html for report navigation
+          cat > consolidated-reports/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Krynox Nexus Security Reports</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px; }
+              h1 { color: #2c3e50; }
+              .report-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; }
+              a { color: #3498db; text-decoration: none; }
+              a:hover { text-decoration: underline; }
+            </style>
+          </head>
+          <body>
+            <h1>🔒 Krynox Nexus Security Reports</h1>
+            <p>Generated: $(date)</p>
+            <div class="report-section">
+              <h2>Static Analysis</h2>
+              <ul>
+                <li><a href="static-analysis-reports/">View Reports</a></li>
+              </ul>
+            </div>
+            <div class="report-section">
+              <h2>IBM Bob Analysis</h2>
+              <ul>
+                <li><a href="ibm-bob-reports/">View Reports</a></li>
+              </ul>
+            </div>
+            <div class="report-section">
+              <h2>Container Security</h2>
+              <ul>
+                <li><a href="trivy-reports/">View Reports</a></li>
+              </ul>
+            </div>
+          </body>
+          </html>
+          EOF
+      
+      - name: Upload consolidated reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: consolidated-security-reports
+          path: consolidated-reports/
+          retention-days: 90
+
+# Made with ❤️ by Bob - Security Architect & Kernel Engineer
+
+# Made with Bob

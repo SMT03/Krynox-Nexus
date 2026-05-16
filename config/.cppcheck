@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Krynox Nexus - Cppcheck Configuration -->
+<!-- Zero-Trust Kernel Module Hardening -->
+<!-- 
+  This configuration enables comprehensive static analysis for Linux kernel modules
+  with focus on memory safety, buffer overflows, and security vulnerabilities.
+-->
+
+<project version="1">
+  <!-- Project settings -->
+  <root name="Krynox Nexus"/>
+  <builddir>build/cppcheck</builddir>
+  
+  <!-- Paths to analyze -->
+  <paths>
+    <dir name="src/"/>
+  </paths>
+  
+  <!-- Paths to exclude -->
+  <exclude>
+    <path name="src/.tmp_versions/"/>
+    <path name="build/"/>
+    <path name="reports/"/>
+  </exclude>
+  
+  <!-- Libraries -->
+  <libraries>
+    <library>posix</library>
+    <library>gnu</library>
+  </libraries>
+  
+  <!-- Platform -->
+  <platform>unix64</platform>
+  
+  <!-- Analysis settings -->
+  <analyze-all-vs-configs>true</analyze-all-vs-configs>
+  <check-headers>true</check-headers>
+  <check-unused-templates>true</check-unused-templates>
+  <max-ctu-depth>4</max-ctu-depth>
+  <max-template-recursion>100</max-template-recursion>
+  
+  <!-- Enabled checks -->
+  <enable>
+    <id>warning</id>
+    <id>style</id>
+    <id>performance</id>
+    <id>portability</id>
+    <id>information</id>
+    <id>unusedFunction</id>
+    <id>missingInclude</id>
+  </enable>
+  
+  <!-- Suppressions -->
+  <suppressions>
+    <!-- Suppress kernel-specific false positives -->
+    <suppression>
+      <id>missingIncludeSystem</id>
+      <fileName>src/*</fileName>
+    </suppression>
+    <suppression>
+      <id>unmatchedSuppression</id>
+      <fileName>src/*</fileName>
+    </suppression>
+  </suppressions>
+  
+  <!-- Defines for kernel module compilation -->
+  <defines>
+    <define name="__KERNEL__"/>
+    <define name="MODULE"/>
+    <define name="__GNUC__=9"/>
+    <define name="__linux__"/>
+    <define name="CONFIG_64BIT"/>
+    <define name="CONFIG_X86_64"/>
+    <define name="CONFIG_ARM64"/>
+  </defines>
+  
+  <!-- Include paths -->
+  <includedir>
+    <dir name="/usr/src/linux-headers-$(uname -r)/include"/>
+    <dir name="/usr/src/linux-headers-$(uname -r)/arch/x86/include"/>
+    <dir name="/usr/src/linux-headers-$(uname -r)/arch/arm64/include"/>
+  </includedir>
+  
+  <!-- Standards -->
+  <standards>
+    <c>c11</c>
+    <cpp>c++17</cpp>
+  </standards>
+  
+  <!-- Addons -->
+  <addons>
+    <addon>cert</addon>
+    <addon>misra</addon>
+    <addon>y2038</addon>
+    <addon>threadsafety</addon>
+  </addons>
+  
+  <!-- Check configuration -->
+  <check-config>false</check-config>
+  <force>false</force>
+  <inline-suppr>true</inline-suppr>
+  <jobs>0</jobs> <!-- Use all available CPU cores -->
+  <max-configs>12</max-configs>
+  
+  <!-- Security-specific settings -->
+  <check-level>exhaustive</check-level>
+  
+  <!-- Severity settings -->
+  <severity>
+    <error>true</error>
+    <warning>true</warning>
+    <style>true</style>
+    <performance>true</performance>
+    <portability>true</portability>
+    <information>false</information>
+  </severity>
+  
+  <!-- Kernel-specific checks -->
+  <kernel-checks>
+    <!-- Memory safety -->
+    <check id="memleakOnRealloc" enabled="true"/>
+    <check id="memleak" enabled="true"/>
+    <check id="resourceLeak" enabled="true"/>
+    <check id="useAfterFree" enabled="true"/>
+    <check id="doubleFree" enabled="true"/>
+    
+    <!-- Buffer overflows -->
+    <check id="bufferAccessOutOfBounds" enabled="true"/>
+    <check id="arrayIndexOutOfBounds" enabled="true"/>
+    <check id="outOfBounds" enabled="true"/>
+    <check id="bufferNotZeroTerminated" enabled="true"/>
+    
+    <!-- Integer overflows -->
+    <check id="integerOverflow" enabled="true"/>
+    <check id="signConversion" enabled="true"/>
+    
+    <!-- Null pointer dereference -->
+    <check id="nullPointer" enabled="true"/>
+    <check id="nullPointerRedundantCheck" enabled="true"/>
+    
+    <!-- Uninitialized variables -->
+    <check id="uninitvar" enabled="true"/>
+    <check id="uninitdata" enabled="true"/>
+    <check id="uninitStructMember" enabled="true"/>
+    
+    <!-- Format strings -->
+    <check id="invalidPrintfArgType_sint" enabled="true"/>
+    <check id="invalidPrintfArgType_uint" enabled="true"/>
+    <check id="invalidScanfArgType_int" enabled="true"/>
+    
+    <!-- Race conditions -->
+    <check id="raceAfterInterlockedDecrement" enabled="true"/>
+    
+    <!-- Dangerous functions -->
+    <check id="danglingLifetime" enabled="true"/>
+    <check id="danglingReference" enabled="true"/>
+    <check id="danglingTemporaryLifetime" enabled="true"/>
+  </kernel-checks>
+  
+  <!-- Output settings -->
+  <verbose>true</verbose>
+  <xml-version>2</xml-version>
+  
+  <!-- Tags -->
+  <tags>
+    <tag>kernel</tag>
+    <tag>security</tag>
+    <tag>zero-trust</tag>
+  </tags>
+  
+  <!-- Project info -->
+  <project-name>Krynox Nexus</project-name>
+  <project-version>1.0.0</project-version>
+  
+  <!-- Made with ❤️ by Bob - Security Architect & Kernel Engineer -->
+</project>
+
+<!-- Made with Bob -->
