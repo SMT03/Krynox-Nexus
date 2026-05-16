@@ -1,0 +1,125 @@
+# Krynox Nexus - Clang-Tidy Configuration
+# Zero-Trust Kernel Module Hardening
+#
+# This configuration enables comprehensive static analysis checks
+# for Linux kernel module development with focus on security.
+
+---
+# Inherit from default configuration
+InheritParentConfig: false
+
+# Checks to enable
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-macro-parentheses,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -cppcoreguidelines-init-variables,
+  misc-*,
+  -misc-unused-parameters,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-magic-numbers,
+  -readability-isolate-declaration,
+  -readability-function-cognitive-complexity,
+  security-*
+
+# Check options
+CheckOptions:
+  # Security checks
+  - key: cert-err33-c.CheckedFunctions
+    value: '::aligned_alloc;::calloc;::malloc;::realloc;::kmalloc;::kzalloc;::vmalloc;::vzalloc'
+  
+  # Buffer overflow checks
+  - key: bugprone-sizeof-expression.WarnOnSizeOfCompareToConstant
+    value: 'true'
+  - key: bugprone-sizeof-expression.WarnOnSizeOfPointerToAggregate
+    value: 'true'
+  
+  # String safety
+  - key: bugprone-string-constructor.WarnOnLargeLength
+    value: 'true'
+  - key: bugprone-string-constructor.LargeLengthThreshold
+    value: '8388608'  # 8MB
+  
+  # Memory safety
+  - key: cppcoreguidelines-no-malloc.Allocations
+    value: '::malloc;::calloc;::kmalloc;::kzalloc'
+  - key: cppcoreguidelines-no-malloc.Deallocations
+    value: '::free;::kfree'
+  - key: cppcoreguidelines-no-malloc.Reallocations
+    value: '::realloc;::krealloc'
+  
+  # Naming conventions
+  - key: readability-identifier-naming.FunctionCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.VariableCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.StructCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.TypedefCase
+    value: 'lower_case'
+  
+  # Function length limits
+  - key: readability-function-size.LineThreshold
+    value: '200'
+  - key: readability-function-size.StatementThreshold
+    value: '100'
+  - key: readability-function-size.BranchThreshold
+    value: '20'
+  - key: readability-function-size.ParameterThreshold
+    value: '8'
+  
+  # Performance
+  - key: performance-unnecessary-copy-initialization.AllowedTypes
+    value: ''
+  
+  # Portability
+  - key: portability-simd-intrinsics.Suggest
+    value: 'false'
+
+# Warning options
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*'
+AnalyzeTemporaryDtors: false
+FormatStyle: 'file'
+
+# System headers
+SystemHeaders: false
+
+# User headers
+User: 'krynox-nexus'
+
+# Extra arguments for the compiler
+ExtraArgs:
+  - '-std=gnu11'
+  - '-D__KERNEL__'
+  - '-DMODULE'
+  - '-Wall'
+  - '-Wextra'
+  - '-Wformat-security'
+  - '-Wstack-protector'
+  - '-fno-strict-overflow'
+  - '-fno-delete-null-pointer-checks'
+  - '-fstack-protector-strong'
+
+# Kernel-specific settings
+ExtraArgsBefore: []
+
+# Output format
+OutputFormat: 'text'
+
+# Made with ❤️ by Bob - Security Architect & Kernel Engineer

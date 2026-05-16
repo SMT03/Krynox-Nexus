@@ -62,6 +62,17 @@ clean: ## Clean build artifacts
 	@rm -f build.log
 	@echo "$(GREEN)✓ Clean complete$(NC)"
 
+clean-test: ## Clean test artifacts and coverage data
+	@echo "$(YELLOW)Cleaning test artifacts...$(NC)"
+	@rm -f $(TEST_UNIT_DIR)/test_secure_modules
+	@rm -f $(TEST_UNIT_DIR)/*.gcda $(TEST_UNIT_DIR)/*.gcno $(TEST_UNIT_DIR)/*.gcov
+	@rm -f *.gcda *.gcno *.gcov
+	@rm -rf $(COVERAGE_DIR)
+	@echo "$(GREEN)✓ Test artifacts cleaned$(NC)"
+
+clean-all: clean clean-test clean-reports ## Clean everything
+	@echo "$(GREEN)✓ Complete cleanup done$(NC)"
+
 install: build ## Install kernel modules (requires root)
 	@echo "$(BLUE)Installing kernel modules...$(NC)"
 	@if [ "$$(id -u)" -ne 0 ]; then \
@@ -98,18 +109,67 @@ scan: security-scan ## Alias for security-scan
 # Testing Targets
 # ============================================================================
 
-test: build ## Run all tests
-	@echo "$(BLUE)Running tests...$(NC)"
-	@echo "$(YELLOW)Test suite not yet implemented$(NC)"
-	@echo "$(GREEN)✓ Tests complete$(NC)"
+# ============================================================================
+# Testing Configuration
+# ============================================================================
 
-test-unit: ## Run unit tests
+TEST_DIR := tests
+TEST_UNIT_DIR := $(TEST_DIR)/unit
+TEST_CFLAGS := -Wall -Wextra -Werror -g -O0
+TEST_CFLAGS += -fprofile-arcs -ftest-coverage  # gcov support
+TEST_LDFLAGS := -lcmocka -lgcov
+COVERAGE_DIR := coverage
+
+test: test-unit ## Run all tests
+	@echo "$(GREEN)✓ All tests complete$(NC)"
+
+test-unit: $(TEST_UNIT_DIR)/test_secure_modules ## Run unit tests
 	@echo "$(BLUE)Running unit tests...$(NC)"
-	@echo "$(YELLOW)Unit tests not yet implemented$(NC)"
+	@./$(TEST_UNIT_DIR)/test_secure_modules
+	@echo "$(GREEN)✓ Unit tests complete$(NC)"
+
+$(TEST_UNIT_DIR)/test_secure_modules: $(TEST_UNIT_DIR)/test_secure_modules.c
+	@echo "$(BLUE)Compiling unit tests...$(NC)"
+	@$(CC) $(TEST_CFLAGS) -o $@ $< $(TEST_LDFLAGS)
+	@echo "$(GREEN)✓ Unit tests compiled$(NC)"
 
 test-integration: ## Run integration tests
 	@echo "$(BLUE)Running integration tests...$(NC)"
-	@echo "$(YELLOW)Integration tests not yet implemented$(NC)"
+	@if ! command -v pytest &> /dev/null; then \
+		echo "$(RED)Error: pytest not found$(NC)"; \
+		echo "$(YELLOW)Install with: pip3 install -r tests/integration/requirements.txt$(NC)"; \
+		exit 1; \
+	fi
+	@pytest tests/integration/test_pipeline.py -v --tb=short
+	@echo "$(GREEN)✓ Integration tests complete$(NC)"
+
+test-integration-verbose: ## Run integration tests with detailed output
+	@echo "$(BLUE)Running integration tests (verbose)...$(NC)"
+	@pytest tests/integration/test_pipeline.py -vv --tb=long
+
+test-integration-coverage: ## Run integration tests with coverage
+	@echo "$(BLUE)Running integration tests with coverage...$(NC)"
+	@pytest tests/integration/test_pipeline.py -v --cov=scripts --cov-report=html --cov-report=term
+	@echo "$(GREEN)✓ Coverage report: htmlcov/index.html$(NC)"
+
+install-test-deps: ## Install integration test dependencies
+	@echo "$(BLUE)Installing integration test dependencies...$(NC)"
+	@pip3 install -r tests/integration/requirements.txt
+	@echo "$(GREEN)✓ Dependencies installed$(NC)"
+
+coverage: test-unit ## Generate code coverage report
+	@echo "$(BLUE)Generating coverage report...$(NC)"
+	@mkdir -p $(COVERAGE_DIR)
+	@lcov --capture --directory $(TEST_UNIT_DIR) --output-file $(COVERAGE_DIR)/coverage.info 2>/dev/null || true
+	@lcov --remove $(COVERAGE_DIR)/coverage.info '/usr/*' --output-file $(COVERAGE_DIR)/coverage.info 2>/dev/null || true
+	@genhtml $(COVERAGE_DIR)/coverage.info --output-directory $(COVERAGE_DIR) 2>/dev/null || true
+	@echo "$(GREEN)✓ Coverage report generated: $(COVERAGE_DIR)/index.html$(NC)"
+
+view-coverage: coverage ## View coverage report in browser
+	@echo "$(BLUE)Opening coverage report...$(NC)"
+	@xdg-open $(COVERAGE_DIR)/index.html 2>/dev/null || \
+		open $(COVERAGE_DIR)/index.html 2>/dev/null || \
+		echo "$(YELLOW)Please open $(COVERAGE_DIR)/index.html manually$(NC)"
 
 # ============================================================================
 # Docker Targets

@@ -2,9 +2,22 @@
 
 **Zero-Trust Kernel Module Hardening and CI/CD Pipeline**
 
+## 🛡️ Security Pipeline Status
+
 [![Security Scan](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml/badge.svg)](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml)
+[![CodeQL](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml/badge.svg?job=codeql-analysis)](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml)
+[![Static Analysis](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml/badge.svg?job=static-analysis)](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml)
+[![IBM Bob](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml/badge.svg?job=ibm-bob-analysis)](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml)
+[![Container Security](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml/badge.svg?job=container-security)](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml)
+[![Kernel Hardening](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml/badge.svg?job=kernel-hardening)](https://github.com/krynox-nexus/krynox-nexus/actions/workflows/security-scan.yml)
+
+## 📊 Project Info
+
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![Kernel: 5.15+](https://img.shields.io/badge/Kernel-5.15%2B-orange.svg)](https://www.kernel.org/)
+[![SARIF: 2.1.0](https://img.shields.io/badge/SARIF-2.1.0-green.svg)](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html)
+[![Python: 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 
 > **Automated detection and remediation of memory safety vulnerabilities and privilege escalation risks in custom Linux kernel modules.**
 
@@ -188,10 +201,38 @@ All security scans generate comprehensive reports in multiple formats:
 
 - **JSON**: Machine-readable format for automation
 - **HTML**: Human-readable reports with visualizations
-- **SARIF**: GitHub Security tab integration
+- **SARIF 2.1.0**: GitHub Security tab integration with CWE mappings
 - **Text**: Console-friendly output
 
 Reports are automatically uploaded to GitHub Actions artifacts and can be viewed in the Actions tab.
+
+### 🔍 SARIF Integration
+
+Krynox Nexus implements comprehensive SARIF (Static Analysis Results Interchange Format) 2.1.0 support for seamless integration with GitHub's Security tab:
+
+**Supported Tools:**
+- ✅ **CodeQL**: Native SARIF support for C/C++ analysis
+- ✅ **Clang Static Analyzer**: Custom converter with regex-based parsing
+- ✅ **Cppcheck**: XML to SARIF conversion with CWE mapping
+- ✅ **Sparse**: Kernel-specific warning conversion
+- ✅ **IBM Bob CLI**: Architectural analysis JSON to SARIF
+- ✅ **Kernel Hardening**: Configuration check results to SARIF
+- ✅ **Trivy**: Container vulnerability scanning
+
+**Features:**
+- 🎯 **CWE Mapping**: 40+ kernel-specific vulnerability patterns
+- 📍 **Precise Locations**: Line numbers, columns, and code snippets
+- 🔢 **Severity Levels**: Error, Warning, Note classifications
+- 🏷️ **Categorization**: Separate categories for each analysis type
+- 📝 **Rich Metadata**: Tool versions, execution timestamps, rule descriptions
+
+**View Results:**
+Navigate to the **Security** tab in your GitHub repository to view all SARIF findings in a unified dashboard. Each security tool uploads results to a separate category for easy filtering and analysis.
+
+For detailed SARIF implementation documentation, see:
+- [SARIF Implementation Plan](docs/security/SARIF_IMPLEMENTATION_PLAN.md)
+- [SARIF Quick Reference](docs/security/SARIF_QUICK_REFERENCE.md)
+- [SARIF Workflow Diagram](docs/security/SARIF_WORKFLOW_DIAGRAM.md)
 
 ---
 
