@@ -1,0 +1,110 @@
+# Krynox Nexus Docker Compose Configuration
+#
+# Multi-container orchestration for security scanning and building
+# kernel modules in isolated environments.
+#
+# Part of Krynox Nexus - Zero-Trust Kernel Module Hardening
+
+version: '3.8'
+
+services:
+  # Security scanner container
+  scanner:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.scanner
+    image: krynox-scanner:latest
+    container_name: krynox-scanner
+    volumes:
+      - ../:/workspace:ro
+      - scanner-reports:/workspace/reports
+    environment:
+      - REPORT_DIR=/workspace/reports
+      - SCAN_TYPE=full
+    networks:
+      - krynox-network
+    command: >
+      bash -c "
+        echo 'Starting security scan...' &&
+        /usr/local/bin/security-scripts/run_static_analysis.sh &&
+        /usr/local/bin/security-scripts/run_ibm_bob.sh &&
+        echo 'Security scan complete!'
+      "
+
+  # Kernel module builder container
+  builder:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.builder
+    image: krynox-builder:latest
+    container_name: krynox-builder
+    volumes:
+      - ../:/build
+      - build-cache:/build/.cache
+    environment:
+      - KCFLAGS=-Wall -Wextra -Werror
+      - BUILD_TYPE=release
+    networks:
+      - krynox-network
+    command: >
+      bash -c "
+        echo 'Building kernel modules...' &&
+        cd /build &&
+        /usr/local/bin/build-scripts/build_modules.sh &&
+        echo 'Build complete!'
+      "
+
+  # Report aggregator (optional)
+  reporter:
+    image: nginx:alpine
+    container_name: krynox-reporter
+    volumes:
+      - scanner-reports:/usr/share/nginx/html/reports:ro
+      - ../docs:/usr/share/nginx/html/docs:ro
+    ports:
+      - "8080:80"
+    networks:
+      - krynox-network
+    depends_on:
+      - scanner
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  krynox-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  scanner-reports:
+    driver: local
+  build-cache:
+    driver: local
+
+# Usage Examples:
+#
+# Build all containers:
+#   docker-compose build
+#
+# Run security scan:
+#   docker-compose up scanner
+#
+# Build kernel modules:
+#   docker-compose up builder
+#
+# Run full pipeline:
+#   docker-compose up
+#
+# View reports in browser:
+#   docker-compose up reporter
+#   Open http://localhost:8080/reports
+#
+# Clean up:
+#   docker-compose down -v
+
+# Made with Bob

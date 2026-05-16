@@ -1,0 +1,85 @@
+# Krynox Nexus Security Scanner Container
+# 
+# This Docker image contains all security analysis tools for scanning
+# Linux kernel modules in an isolated, reproducible environment.
+#
+# Part of Krynox Nexus - Zero-Trust Kernel Module Hardening
+
+FROM ubuntu:22.04
+
+LABEL maintainer="Krynox Nexus Security Team"
+LABEL description="Security scanner for Linux kernel modules"
+LABEL version="1.0.0"
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Install system dependencies and kernel headers
+RUN apt-get update && apt-get install -y \
+    # Build essentials
+    build-essential \
+    gcc \
+    g++ \
+    make \
+    cmake \
+    git \
+    curl \
+    wget \
+    # Kernel development
+    linux-headers-generic \
+    kmod \
+    # Static analysis tools
+    clang \
+    clang-tools \
+    clang-tidy \
+    cppcheck \
+    sparse \
+    # Memory safety tools
+    valgrind \
+    # Additional utilities
+    jq \
+    python3 \
+    python3-pip \
+    nodejs \
+    npm \
+    # Documentation tools
+    doxygen \
+    graphviz \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install IBM Bob CLI
+RUN npm install -g @ibm/bob-cli || echo "IBM Bob CLI installation skipped"
+
+# Install Python security tools
+RUN pip3 install --no-cache-dir \
+    bandit \
+    safety \
+    pylint
+
+# Create working directory
+WORKDIR /workspace
+
+# Create directories for reports
+RUN mkdir -p /workspace/reports/{bob,static-analysis,memory-safety,sarif}
+
+# Copy security scanning scripts
+COPY scripts/security/ /usr/local/bin/security-scripts/
+RUN chmod +x /usr/local/bin/security-scripts/*.sh
+
+# Set up environment variables
+ENV PATH="/usr/local/bin/security-scripts:${PATH}"
+ENV REPORT_DIR="/workspace/reports"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD clang --version && cppcheck --version || exit 1
+
+# Default command
+CMD ["/bin/bash"]
+
+# Usage:
+# docker build -f docker/Dockerfile.scanner -t krynox-scanner:latest .
+# docker run -v $(pwd):/workspace krynox-scanner:latest ./scripts/security/run_static_analysis.sh
+
+# Made with Bob
