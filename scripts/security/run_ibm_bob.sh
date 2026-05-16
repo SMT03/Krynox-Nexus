@@ -175,32 +175,41 @@ EOF
     echo ""
 }
 
-generate_sarif_report() {
-    log_step "Generating SARIF report for GitHub integration..."
+convert_to_sarif() {
+    log_step "Converting IBM Bob output to SARIF format..."
     
+    local converter_dir="$SCRIPT_DIR/sarif_converters"
     local sarif_file="$REPORT_DIR/sarif/bob_results.sarif"
     
-    # Convert Bob JSON reports to SARIF format
-    cat > "$sarif_file" <<EOF
-{
-  "\$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-  "version": "2.1.0",
-  "runs": [
-    {
-      "tool": {
-        "driver": {
-          "name": "IBM Bob CLI",
-          "informationUri": "https://www.ibm.com/bob",
-          "version": "1.0.0"
-        }
-      },
-      "results": []
-    }
-  ]
-}
-EOF
+    # Ensure Python 3 is available
+    if ! command -v python3 &> /dev/null; then
+        log_error "Python 3 not found, skipping SARIF conversion"
+        return 1
+    fi
     
-    log_info "SARIF report generated: $sarif_file"
+    # Check if we have JSON reports to convert
+    if [ ! -d "$REPORT_DIR/json" ] || [ -z "$(ls -A $REPORT_DIR/json/*.json 2>/dev/null)" ]; then
+        log_warn "No IBM Bob JSON reports found, skipping SARIF conversion"
+        return 0
+    fi
+    
+    # Convert the first JSON report (or merge multiple if needed)
+    local first_json=$(ls "$REPORT_DIR/json"/*.json 2>/dev/null | head -n 1)
+    
+    if [ -n "$first_json" ]; then
+        log_info "Converting IBM Bob JSON to SARIF..."
+        python3 "$converter_dir/bob_converter.py" \
+            --input "$first_json" \
+            --output "$sarif_file" \
+            --project-root "$PROJECT_ROOT" \
+            2>&1 | tee -a "$REPORT_DIR/sarif_conversion.log"
+        
+        if [ ${PIPESTATUS[0]} -eq 0 ]; then
+            log_info "✓ IBM Bob SARIF conversion successful"
+        else
+            log_warn "✗ IBM Bob SARIF conversion failed"
+        fi
+    fi
 }
 
 check_exit_status() {
@@ -231,7 +240,7 @@ main() {
     setup_report_directory
     analyze_source_files
     generate_summary_report
-    generate_sarif_report
+    convert_to_sarif
     
     log_info "=== Analysis Complete ==="
     log_info "Reports available in: $REPORT_DIR"
