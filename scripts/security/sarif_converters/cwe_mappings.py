@@ -310,6 +310,4 @@ def get_cwe_category(cwe_id: str) -> Optional[str]:
     return cwe_data["category"] if cwe_data else None
 
 
-# Made with ❤️ by Bob - Security Architect & Kernel Engineer
 
-# Made with Bob

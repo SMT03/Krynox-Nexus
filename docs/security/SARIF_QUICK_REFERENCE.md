@@ -405,7 +405,6 @@ print(json.dumps(sarif, indent=2))
 - Tag: `@bob` for security questions
 
 ### Security
-- Email: security@krynox-nexus.local
 - For vulnerabilities in SARIF implementation
 
 ---

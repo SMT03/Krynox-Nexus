@@ -615,11 +615,6 @@
 - **Validation:** `scripts/security/test_sarif_converters.py`
 - **Converters:** `scripts/security/sarif_converters/`
 
-### Contact
-- **Project Lead:** Bob (AI Security Architect)
-- **Repository:** https://github.com/SMT03/Krynox-Nexus
-- **Documentation:** `docs/security/`
-
 ---
 
 ## 📋 Final Checklist

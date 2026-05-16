@@ -437,6 +437,4 @@ class BaseSARIFConverter(ABC):
             return False
 
 
-# Made with ❤️ by Bob - Security Architect & Kernel Engineer
 
-# Made with Bob
