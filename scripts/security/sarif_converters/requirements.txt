@@ -1,0 +1,14 @@
+# SARIF Converter Dependencies
+# Krynox Nexus - Zero-Trust Kernel Module Hardening
+
+# SARIF Object Model - Official SARIF library
+sarif-om==1.0.4
+
+# XML parsing for Cppcheck
+lxml==4.9.3
+
+# JSON schema validation
+jsonschema==4.19.0
+
+# Additional utilities
+requests==2.31.0
