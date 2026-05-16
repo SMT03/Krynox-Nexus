@@ -522,4 +522,3 @@ module_exit(secure_buffer_exit);
  * ============================================================================
  */
 
-// Made with Bob - Security Architect & Kernel Engineer

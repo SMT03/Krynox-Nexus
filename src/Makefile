@@ -49,4 +49,3 @@ help:
 
 .PHONY: all modules clean install help
 
-# Made with Bob

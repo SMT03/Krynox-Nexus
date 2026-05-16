@@ -494,10 +494,7 @@ gh run view RUN_ID --log --job=static-analysis
 
 ### Support
 - GitHub Issues: Report bugs or request features
-- Security Team: security@krynox-nexus.local
-- Documentation: docs/security/
-
----
+- Documentation: `docs/security/`
 
 ## Appendix: Workflow YAML Reference
 

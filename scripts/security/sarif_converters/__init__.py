@@ -27,4 +27,3 @@ __all__ = [
     'CWE_DATABASE',
 ]
 
-# Made with Bob

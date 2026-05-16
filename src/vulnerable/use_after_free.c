@@ -227,4 +227,3 @@ static void __exit use_after_free_exit(void)
 module_init(use_after_free_init);
 module_exit(use_after_free_exit);
 
-// Made with Bob

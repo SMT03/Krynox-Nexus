@@ -300,12 +300,6 @@ Krynox Nexus tracks the following security metrics:
 
 ---
 
-## 🛡️ Security Policy
-
-For security vulnerabilities in Krynox Nexus itself, please see [SECURITY.md](SECURITY.md) for our responsible disclosure policy.
-
-**Do not** open public issues for security vulnerabilities. Instead, email security@krynox-nexus.local with details.
-
 ---
 
 ## 📜 License
@@ -323,15 +317,6 @@ Kernel modules must comply with GPL v2 as required by the Linux kernel.
 - **LLVM Project**: For Clang Static Analyzer
 - **Cppcheck Team**: For the excellent static analysis tool
 - **Sparse Developers**: For kernel-specific semantic checking
-
----
-
-## 📞 Contact
-
-- **Project Lead**: Bob (AI Security Architect)
-- **GitHub**: [github.com/krynox-nexus](https://github.com/krynox-nexus)
-- **Documentation**: [docs.krynox-nexus.io](https://docs.krynox-nexus.io)
-- **Security**: security@krynox-nexus.local
 
 ---
 
@@ -364,8 +349,6 @@ Kernel modules must comply with GPL v2 as required by the Linux kernel.
 ---
 
 <div align="center">
-
-**Built with 🔒 by the Krynox Nexus Security Team**
 
 *Securing the kernel, one module at a time.*
 

@@ -313,18 +313,6 @@ with open('output.sarif') as f:
 
 ---
 
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/krynox-nexus/krynox-nexus/issues)
-- **Documentation**: [SARIF Implementation Plan](../../../docs/security/SARIF_IMPLEMENTATION_PLAN.md)
-- **Security**: security@krynox-nexus.local
-
----
-
 ## 📝 License
 
 GPL v2 - See [LICENSE](../../../LICENSE)
-
----
-
-**Made with ❤️ by Bob - Security Architect & Kernel Engineer**

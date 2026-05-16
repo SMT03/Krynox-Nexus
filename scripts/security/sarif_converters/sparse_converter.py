@@ -241,6 +241,4 @@ if __name__ == '__main__':
     main()
 
 
-# Made with ❤️ by Bob - Security Architect & Kernel Engineer
 
-# Made with Bob

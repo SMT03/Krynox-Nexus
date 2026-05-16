@@ -73,4 +73,3 @@ CMD ["/bin/bash"]
 # docker build -f docker/Dockerfile.builder -t krynox-builder:latest .
 # docker run -v $(pwd):/build krynox-builder:latest make -C src
 
-# Made with Bob
