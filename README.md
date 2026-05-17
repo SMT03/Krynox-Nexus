@@ -208,6 +208,14 @@ All security scans generate comprehensive reports in multiple formats:
 
 Reports are automatically uploaded to GitHub Actions artifacts and can be viewed in the Actions tab.
 
+### 🌐 Vercel Demo Dashboard Deployment
+
+You can host and share a live demo of the interactive security dashboard on **Vercel** with zero configuration:
+
+1. Navigate to the [Vercel New Project page](https://vercel.com/new).
+2. Connect your GitHub account and import your `Krynox-Nexus` repository.
+3. Click **Deploy**. Vercel will automatically read the root `vercel.json` configuration and serve your static `reports/` folder directly at your root domain!
+
 ### 🔍 SARIF Integration
 
 Krynox Nexus implements comprehensive SARIF (Static Analysis Results Interchange Format) 2.1.0 support for seamless integration with GitHub's Security tab:

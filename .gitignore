@@ -207,3 +207,6 @@ hangs/
 !config/*.example
 !config/templates/
 
+# Allow Vercel config
+!vercel.json
+
