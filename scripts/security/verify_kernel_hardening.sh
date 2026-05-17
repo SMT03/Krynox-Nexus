@@ -3,7 +3,7 @@
 # Part of Krynox Nexus - Zero-Trust Kernel Module Hardening
 # Target: ARM64 Edge Devices (Google Pixel 6a and similar)
 
-set -e
+# No set -e here because functions intentionally return 1 on check failures
 
 echo "=== Krynox Nexus Kernel Hardening Verification ==="
 echo "Target: ARM64 Edge Device (Google Pixel 6a)"
@@ -36,19 +36,19 @@ check_config() {
         actual=$(zcat /proc/config.gz | grep "^${config}" | cut -d= -f2)
         echo -e "${RED}[✗]${NC} ${config}=${actual} (expected: ${expected}) (${priority})"
         case $priority in
-            CRITICAL) ((CRITICAL_FAIL++)) ;;
-            HIGH) ((HIGH_FAIL++)) ;;
-            MEDIUM) ((MEDIUM_FAIL++)) ;;
-            LOW) ((LOW_FAIL++)) ;;
+            CRITICAL) ((++CRITICAL_FAIL)) ;;
+            HIGH) ((++HIGH_FAIL)) ;;
+            MEDIUM) ((++MEDIUM_FAIL)) ;;
+            LOW) ((++LOW_FAIL)) ;;
         esac
         return 1
     else
         echo -e "${RED}[✗]${NC} ${config} NOT SET (expected: ${expected}) (${priority})"
         case $priority in
-            CRITICAL) ((CRITICAL_FAIL++)) ;;
-            HIGH) ((HIGH_FAIL++)) ;;
-            MEDIUM) ((MEDIUM_FAIL++)) ;;
-            LOW) ((LOW_FAIL++)) ;;
+            CRITICAL) ((++CRITICAL_FAIL)) ;;
+            HIGH) ((++HIGH_FAIL)) ;;
+            MEDIUM) ((++MEDIUM_FAIL)) ;;
+            LOW) ((++LOW_FAIL)) ;;
         esac
         return 1
     fi
@@ -62,10 +62,10 @@ check_not_set() {
     if zcat /proc/config.gz 2>/dev/null | grep -q "^${config}="; then
         echo -e "${RED}[✗]${NC} ${config} is SET (should not be set) (${priority})"
         case $priority in
-            CRITICAL) ((CRITICAL_FAIL++)) ;;
-            HIGH) ((HIGH_FAIL++)) ;;
-            MEDIUM) ((MEDIUM_FAIL++)) ;;
-            LOW) ((LOW_FAIL++)) ;;
+            CRITICAL) ((++CRITICAL_FAIL)) ;;
+            HIGH) ((++HIGH_FAIL)) ;;
+            MEDIUM) ((++MEDIUM_FAIL)) ;;
+            LOW) ((++LOW_FAIL)) ;;
         esac
         return 1
     else
@@ -116,7 +116,7 @@ elif zcat /proc/config.gz 2>/dev/null | grep -q "^CONFIG_ARM64_SW_TTBR0_PAN=y"; 
     echo -e "${GREEN}[✓]${NC} CONFIG_ARM64_SW_TTBR0_PAN=y (software PAN) (HIGH)"
 else
     echo -e "${RED}[✗]${NC} Neither CONFIG_ARM64_PAN nor CONFIG_ARM64_SW_TTBR0_PAN is set (HIGH)"
-    ((HIGH_FAIL++))
+    ((++HIGH_FAIL))
 fi
 
 echo ""
@@ -129,10 +129,10 @@ if command -v getenforce &> /dev/null; then
         echo -e "${GREEN}[✓]${NC} SELinux is Enforcing"
     elif [ "$selinux_status" = "Permissive" ]; then
         echo -e "${YELLOW}[!]${NC} SELinux is Permissive (should be Enforcing)"
-        ((HIGH_FAIL++))
+        ((++HIGH_FAIL))
     else
         echo -e "${RED}[✗]${NC} SELinux is Disabled (should be Enforcing)"
-        ((CRITICAL_FAIL++))
+        ((++CRITICAL_FAIL))
     fi
 else
     echo -e "${YELLOW}[!]${NC} getenforce command not found (cannot verify SELinux)"

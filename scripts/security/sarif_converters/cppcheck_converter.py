@@ -10,7 +10,7 @@ import sys
 import argparse
 from typing import List
 from pathlib import Path
-from lxml import etree
+import xml.etree.ElementTree as etree
 
 from base_converter import BaseSARIFConverter, Finding
 
@@ -114,7 +114,7 @@ class CppcheckConverter(BaseSARIFConverter):
                         )
                         findings.append(finding)
         
-        except etree.XMLSyntaxError as e:
+        except etree.ParseError as e:
             print(f"Error parsing XML: {e}", file=sys.stderr)
             return []
         except Exception as e:

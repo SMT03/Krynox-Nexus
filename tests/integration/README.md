@@ -251,7 +251,7 @@ make ci
 
 - [Main Test README](../README.md) - Overall test suite documentation
 - [Unit Tests](../unit/README.md) - Unit test documentation
-- [AGENTS.md](../../AGENTS.md) - Bob's testing guidelines
+- [AGENTS.md](../../AGENTS.md) - Krynox Security Agent guidelines
 - [CONTRIBUTING.md](../../CONTRIBUTING.md) - Contribution guidelines
 
 ## 🐛 Known Issues
@@ -270,14 +270,14 @@ make ci
 
 For test-related questions:
 - See [CONTRIBUTING.md](../../CONTRIBUTING.md)
-- Check [AGENTS.md](../../AGENTS.md) for Bob's testing guidelines
+- Check [AGENTS.md](../../AGENTS.md) for testing guidelines
 - Open an issue on GitHub
 
 ---
 
 **Status**: ✅ Active  
-**Last Updated**: 2026-05-16  
-**Maintainer**: Bob - Security Architect & Kernel Engineer  
+**Last Updated**: 2026-05-17  
+**Maintainer**: Krynox Security Agent - Security Architect & Kernel Engineer  
 **Test Framework**: pytest 7.0+  
 **Total Tests**: 20 (18 core + 2 edge cases)
 

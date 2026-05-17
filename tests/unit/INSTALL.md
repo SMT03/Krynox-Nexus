@@ -262,7 +262,7 @@ If you encounter issues:
 
 1. Check [tests/unit/README.md](README.md) for detailed documentation
 2. Review [CONTRIBUTING.md](../../CONTRIBUTING.md) for contribution guidelines
-3. See [AGENTS.md](../../AGENTS.md) for Bob's testing guidelines
+3. See [AGENTS.md](../../AGENTS.md) for testing guidelines
 4. Open an issue on GitHub with:
    - Error message
    - System information (`uname -a`)
@@ -271,8 +271,8 @@ If you encounter issues:
 
 ---
 
-**Last Updated**: 2026-05-16  
-**Maintainer**: Bob - Security Architect & Kernel Engineer
+**Last Updated**: 2026-05-17  
+**Maintainer**: Krynox Security Agent - Security Architect & Kernel Engineer
 
 ---
 

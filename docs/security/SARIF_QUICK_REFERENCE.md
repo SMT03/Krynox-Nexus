@@ -1,7 +1,7 @@
 # SARIF Implementation Quick Reference
 ## Krynox Nexus - Developer Guide
 
-**Last Updated:** 2026-05-16
+**Last Updated:** 2026-05-17
 
 ---
 
@@ -402,7 +402,7 @@ print(json.dumps(sarif, indent=2))
 
 ### Questions
 - Discussion: [krynox-nexus/discussions](https://github.com/krynox-nexus/krynox-nexus/discussions)
-- Tag: `@bob` for security questions
+- Tag: `@security-team` for security questions
 
 ### Security
 - For vulnerabilities in SARIF implementation
@@ -410,6 +410,6 @@ print(json.dumps(sarif, indent=2))
 ---
 
 **Quick Reference Version:** 1.0.0  
-**Last Updated:** 2026-05-16
+**Last Updated:** 2026-05-17
 
 *Keep this guide handy during implementation!*

@@ -14,7 +14,7 @@ Supported Tools:
 """
 
 __version__ = "1.0.0"
-__author__ = "Bob (Security Architect)"
+__author__ = "Krynox Security Agent"
 
 from .base_converter import BaseSARIFConverter, Finding
 from .cwe_mappings import get_cwe_id, get_cwe_name, CWE_DATABASE

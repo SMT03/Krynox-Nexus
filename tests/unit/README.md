@@ -170,7 +170,7 @@ Running tests...
 ════════════════════════════════════════════════════════════════════════
 Test execution complete!
 
-Made with ❤️  by Bob - Security Architect & Kernel Engineer
+Made with ❤️  by Krynox Security Agent - Security Architect & Kernel Engineer
 ════════════════════════════════════════════════════════════════════════
 ```
 
@@ -314,14 +314,14 @@ When modifying secure modules:
 
 For test-related questions:
 - See [CONTRIBUTING.md](../../CONTRIBUTING.md)
-- Check [AGENTS.md](../../AGENTS.md) for Bob's guidelines
+- Check [AGENTS.md](../../AGENTS.md) for guidelines
 - Open an issue on GitHub
 
 ---
 
 **Status**: ✅ Active  
-**Last Updated**: 2026-05-16  
-**Maintainer**: Bob - Security Architect & Kernel Engineer
+**Last Updated**: 2026-05-17  
+**Maintainer**: Krynox Security Agent - Security Architect & Kernel Engineer
 
 ---
 
