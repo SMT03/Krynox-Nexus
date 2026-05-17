@@ -15,7 +15,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 from pathlib import Path
 
-from .cwe_mappings import get_cwe_id, get_cwe_name, get_cwe_severity
+from cwe_mappings import get_cwe_id, get_cwe_name, get_cwe_severity
 
 
 @dataclass

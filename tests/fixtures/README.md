@@ -389,7 +389,7 @@ To add new test fixtures:
 - [Kernel Hardening Quick Reference](../../docs/security/KERNEL_HARDENING_QUICK_REFERENCE.md)
 - [ARM Edge Device Hardening](../../docs/security/ARM_EDGE_DEVICE_HARDENING.md)
 - [Security Scan Scripts](../../scripts/security/)
-- [AGENTS.md](../../AGENTS.md) - Bob's security guidelines
+- [AGENTS.md](../../AGENTS.md) - Krynox Security Agent guidelines
 
 ---
 
@@ -406,8 +406,8 @@ When contributing new fixtures:
 ---
 
 **Status**: ✅ Active  
-**Last Updated**: 2026-05-16  
-**Maintainer**: Bob - Security Architect & Kernel Engineer
+**Last Updated**: 2026-05-17  
+**Maintainer**: Krynox Security Agent - Security Architect & Kernel Engineer
 
 ---
 

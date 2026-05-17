@@ -2,9 +2,9 @@
 ## Krynox Nexus - Zero-Trust Kernel Module Hardening
 
 **Version:** 1.0.0  
-**Date:** 2026-05-16  
+**Date:** 2026-05-17  
 **Status:** Planning Phase  
-**Owner:** Bob (Security Architect)
+**Owner:** Krynox Security Agent (Security Architect)
 
 ---
 
@@ -357,8 +357,8 @@ python3 scripts/security/sarif_converters/clang_converter.py \
 ---
 
 **Document Version:** 1.0.0  
-**Last Updated:** 2026-05-16  
-**Next Review:** 2026-05-23
+**Last Updated:** 2026-05-17  
+**Next Review:** 2026-05-24
 
 ---
 

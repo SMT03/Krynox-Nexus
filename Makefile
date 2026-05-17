@@ -4,7 +4,7 @@
 # This Makefile provides convenient targets for building, testing,
 # and security scanning of Linux kernel modules.
 
-.PHONY: all build clean install test security-scan help docker-build docker-scan
+.PHONY: all build clean install test security-scan help docker-build docker-scan reports view-reports coverage view-coverage test-integration test-unit
 
 # Project configuration
 PROJECT_NAME := krynox-nexus
@@ -135,21 +135,21 @@ $(TEST_UNIT_DIR)/test_secure_modules: $(TEST_UNIT_DIR)/test_secure_modules.c
 
 test-integration: ## Run integration tests
 	@echo "$(BLUE)Running integration tests...$(NC)"
-	@if ! command -v pytest &> /dev/null; then \
+	@if ! python3 -m pytest --version &> /dev/null; then \
 		echo "$(RED)Error: pytest not found$(NC)"; \
 		echo "$(YELLOW)Install with: pip3 install -r tests/integration/requirements.txt$(NC)"; \
 		exit 1; \
 	fi
-	@pytest tests/integration/test_pipeline.py -v --tb=short
+	@python3 -m pytest tests/integration/test_pipeline.py -v --tb=short
 	@echo "$(GREEN)✓ Integration tests complete$(NC)"
 
 test-integration-verbose: ## Run integration tests with detailed output
 	@echo "$(BLUE)Running integration tests (verbose)...$(NC)"
-	@pytest tests/integration/test_pipeline.py -vv --tb=long
+	@python3 -m pytest tests/integration/test_pipeline.py -vv --tb=long
 
 test-integration-coverage: ## Run integration tests with coverage
 	@echo "$(BLUE)Running integration tests with coverage...$(NC)"
-	@pytest tests/integration/test_pipeline.py -v --cov=scripts --cov-report=html --cov-report=term
+	@python3 -m pytest tests/integration/test_pipeline.py -v --cov=scripts --cov-report=html --cov-report=term
 	@echo "$(GREEN)✓ Coverage report: htmlcov/index.html$(NC)"
 
 install-test-deps: ## Install integration test dependencies
@@ -159,10 +159,14 @@ install-test-deps: ## Install integration test dependencies
 
 coverage: test-unit ## Generate code coverage report
 	@echo "$(BLUE)Generating coverage report...$(NC)"
+	@if ! command -v lcov &> /dev/null; then \
+		echo "$(RED)Error: lcov not found. Please install it (e.g., sudo dnf install lcov)$(NC)"; \
+		exit 1; \
+	fi
 	@mkdir -p $(COVERAGE_DIR)
-	@lcov --capture --directory $(TEST_UNIT_DIR) --output-file $(COVERAGE_DIR)/coverage.info 2>/dev/null || true
+	@lcov --capture --directory $(TEST_UNIT_DIR) --output-file $(COVERAGE_DIR)/coverage.info
 	@lcov --remove $(COVERAGE_DIR)/coverage.info '/usr/*' --output-file $(COVERAGE_DIR)/coverage.info 2>/dev/null || true
-	@genhtml $(COVERAGE_DIR)/coverage.info --output-directory $(COVERAGE_DIR) 2>/dev/null || true
+	@genhtml $(COVERAGE_DIR)/coverage.info --output-directory $(COVERAGE_DIR)
 	@echo "$(GREEN)✓ Coverage report generated: $(COVERAGE_DIR)/index.html$(NC)"
 
 view-coverage: coverage ## View coverage report in browser
@@ -224,6 +228,8 @@ check-deps: ## Check if required tools are installed
 reports: ## Generate security reports
 	@echo "$(BLUE)Generating reports...$(NC)"
 	@mkdir -p $(REPORTS_DIR)
+	@chmod +x $(SCRIPTS_DIR)/security/generate_dashboard.py
+	@python3 $(SCRIPTS_DIR)/security/generate_dashboard.py
 	@echo "$(GREEN)✓ Reports generated in $(REPORTS_DIR)$(NC)"
 
 view-reports: ## View security reports in browser

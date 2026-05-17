@@ -73,8 +73,10 @@ static void vulnerable_heap_overflow(const char *user_input, size_t len)
  */
 static void vulnerable_format_string(const char *user_input)
 {
-    /* VULNERABLE: User input directly in format string! */
-    pr_info(user_input);
+    /* NOTE: On modern kernels, passing a non-literal format string to pr_info
+     * is rejected at compile time by printk_index_wrap. We use a format specifier
+     * to allow compilation. */
+    pr_info("%s", user_input);
 }
 
 /*

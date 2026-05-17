@@ -10,7 +10,6 @@
  * Total Test Cases: 36
  * 
  * Part of Krynox Nexus - Zero-Trust Kernel Module Hardening
- * Author: Bob - Security Architect & Kernel Engineer
  * Date: 2026-05-16
  */
 
@@ -106,7 +105,7 @@ static void kfree(const void *ptr) {
 }
 
 /* Mock strlcpy */
-static size_t strlcpy(char *dst, const char *src, size_t size) {
+static size_t mock_strlcpy(char *dst, const char *src, size_t size) {
     size_t src_len = strlen(src);
     if (size == 0) {
         return src_len;
@@ -118,15 +117,13 @@ static size_t strlcpy(char *dst, const char *src, size_t size) {
 }
 
 /* Mock strnlen */
-#ifndef strnlen
-static size_t strnlen(const char *s, size_t maxlen) {
+static size_t mock_strnlen(const char *s, size_t maxlen) {
     size_t len = 0;
     while (len < maxlen && s[len] != '\0') {
         len++;
     }
     return len;
 }
-#endif
 
 /* Secure function implementations */
 static int secure_stack_copy(const char *user_input, size_t input_len)
@@ -140,7 +137,7 @@ static int secure_stack_copy(const char *user_input, size_t input_len)
         return -EINVAL;
     }
     
-    copy_len = strlcpy(safe_buffer, user_input, BUFFER_SIZE);
+    copy_len = mock_strlcpy(safe_buffer, user_input, BUFFER_SIZE);
     
     if (copy_len >= BUFFER_SIZE) {
         pr_err("secure_buffer: String truncation occurred\n");
@@ -199,7 +196,7 @@ static int secure_copy_message(const char *src, size_t max_len)
         return -EINVAL;
     }
     
-    len = strnlen(src, max_len);
+    len = mock_strnlen(src, max_len);
     if (len >= max_len) {
         pr_err("hello_secure: Message too long\n");
         return -EINVAL;
@@ -637,8 +634,6 @@ int main(void) {
     
     printf("\n════════════════════════════════════════════════════════════════════════\n");
     printf("Test execution complete!\n");
-    printf("\n");
-    printf("Made with ❤️  by Bob - Security Architect & Kernel Engineer\n");
     printf("════════════════════════════════════════════════════════════════════════\n\n");
     
     return result;

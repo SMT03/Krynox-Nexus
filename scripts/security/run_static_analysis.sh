@@ -135,8 +135,11 @@ run_cppcheck() {
         2>&1 | tee "$cppcheck_txt"
     
     # Count issues
-    local error_count=$(grep -c "error:" "$cppcheck_txt" 2>/dev/null || echo "0")
-    local warning_count=$(grep -c "warning:" "$cppcheck_txt" 2>/dev/null || echo "0")
+    local error_count=$(grep -c "error:" "$cppcheck_txt" 2>/dev/null || true)
+    error_count=${error_count:-0}
+    
+    local warning_count=$(grep -c "warning:" "$cppcheck_txt" 2>/dev/null || true)
+    warning_count=${warning_count:-0}
     
     log_info "Cppcheck found: $error_count errors, $warning_count warnings"
     log_info "Cppcheck reports: $cppcheck_report, $cppcheck_txt"
@@ -189,9 +192,15 @@ generate_summary_report() {
     local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     
     # Count issues from each tool
-    local clang_issues=$(grep -c "warning:" "$REPORT_DIR/clang/analysis.txt" 2>/dev/null || echo "0")
-    local cppcheck_errors=$(grep -c "error:" "$REPORT_DIR/cppcheck/analysis.txt" 2>/dev/null || echo "0")
-    local cppcheck_warnings=$(grep -c "warning:" "$REPORT_DIR/cppcheck/analysis.txt" 2>/dev/null || echo "0")
+    local clang_issues=$(grep -c "warning:" "$REPORT_DIR/clang/analysis.txt" 2>/dev/null || true)
+    clang_issues=${clang_issues:-0}
+    
+    local cppcheck_errors=$(grep -c "error:" "$REPORT_DIR/cppcheck/analysis.txt" 2>/dev/null || true)
+    cppcheck_errors=${cppcheck_errors:-0}
+    
+    local cppcheck_warnings=$(grep -c "warning:" "$REPORT_DIR/cppcheck/analysis.txt" 2>/dev/null || true)
+    cppcheck_warnings=${cppcheck_warnings:-0}
+    
     local sparse_issues=$(wc -l < "$REPORT_DIR/sparse/analysis.txt" 2>/dev/null || echo "0")
     
     local total_issues=$((clang_issues + cppcheck_errors + cppcheck_warnings + sparse_issues))
