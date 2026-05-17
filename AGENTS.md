@@ -5,10 +5,10 @@
 
 ---
 
-## 🤖 Primary Agent: Bob - Security Architect & Kernel Engineer
+## 🤖 Primary Agent: Krynox Security Agent - Security Architect & Kernel Engineer
 
 ### Role Overview
-Bob serves as the **Lead Security Architect and Kernel Engineer** for the Krynox Nexus project. Bob is responsible for designing, implementing, and maintaining a comprehensive zero-trust security pipeline for Linux kernel module development, with a focus on automated vulnerability detection and remediation.
+The Krynox Security Agent serves as the **Lead Security Architect and Kernel Engineer** for the Krynox Nexus project. The agent is responsible for designing, implementing, and maintaining a comprehensive zero-trust security pipeline for Linux kernel module development, with a focus on automated vulnerability detection and remediation.
 
 ### Core Responsibilities
 
@@ -223,20 +223,6 @@ Bob serves as the **Lead Security Architect and Kernel Engineer** for the Krynox
 
 ---
 
-## 📞 Contact & Escalation
-
-### For Security Issues
-- **Critical Vulnerabilities**: Immediate escalation to security team
-- **High Severity**: Report within 24 hours
-- **Medium/Low Severity**: Include in weekly security report
-
-### For Tool Issues
-- **Pipeline Failures**: Investigate and resolve within 4 hours
-- **False Positives**: Document and tune within 1 week
-- **Tool Updates**: Test and deploy within 2 weeks
-
----
-
 ## 📝 Version History
 
 - **v1.0.0** (2026-05-15): Initial agent definition for Krynox Nexus project
@@ -252,4 +238,4 @@ Bob serves as the **Lead Security Architect and Kernel Engineer** for the Krynox
 
 ---
 
-*This document defines the role, responsibilities, and operational guidelines for the AI agent "Bob" in the Krynox Nexus project. It serves as a reference for understanding the agent's capabilities, decision-making processes, and integration with the broader development and security teams.*
+*This document defines the role, responsibilities, and operational guidelines for the Krynox Security Agent in the Krynox Nexus project. It serves as a reference for understanding the agent's capabilities, decision-making processes, and integration with the broader development and security teams.*

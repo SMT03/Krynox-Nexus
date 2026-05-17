@@ -199,7 +199,7 @@ modinfo hello_secure.ko | grep sig
 1. **DO NOT DEPLOY** the module
 2. Review failed configurations
 3. Assess risk level (Critical/High/Medium)
-4. Contact security team if Critical configs missing
+4. Resolve missing Critical configurations before deployment
 5. Document decision if proceeding with warnings
 
 ### If Module Fails to Load
@@ -221,11 +221,10 @@ insmod hello_secure.ko
 1. Immediately unload module: `rmmod hello_secure`
 2. Review kernel logs: `dmesg | grep hello_secure`
 3. Check for exploitation attempts
-4. Report to security team
+4. Analyze and document findings
 5. Preserve evidence for analysis
 
 ---
 
 **Last Updated**: 2026-05-15  
-**Version**: 1.0  
-**Maintained by**: Bob - Security Architect & Kernel Engineer
+**Version**: 1.0

@@ -91,4 +91,3 @@ static void __exit hello_secure_exit(void)
 module_init(hello_secure_init);
 module_exit(hello_secure_exit);
 
-// Made with Bob

@@ -40,11 +40,7 @@ If you discover a security vulnerability in Krynox Nexus, please report it respo
 
 **DO NOT** open a public GitHub issue for security vulnerabilities.
 
-### Reporting Channels
-
-1. **Email**: security@krynox-nexus.local
-2. **Encrypted Email**: Use our PGP key (available on request)
-3. **GitHub Security Advisory**: Use GitHub's private vulnerability reporting feature
+1. **GitHub Security Advisory**: Use GitHub's private vulnerability reporting feature
 
 ### What to Include
 
@@ -317,29 +313,7 @@ CONFIG_UBSAN=y
 
 ---
 
-## 📞 Security Contacts
-
-### Security Team
-
-- **Lead Security Architect**: Bob (AI Agent)
-- **Email**: security@krynox-nexus.local
-- **GitHub**: [@krynox-nexus-security](https://github.com/krynox-nexus-security)
-
-### Response Times
-
-- **Critical**: 24 hours
-- **High**: 48 hours
-- **Medium**: 7 days
-- **Low**: 14 days
-
-### PGP Key
-
-For encrypted communications, request our PGP key:
-
-```
-Email: security@krynox-nexus.local
-Subject: PGP Key Request
-```
+## 🏗️ Technical Reference
 
 ---
 
@@ -384,18 +358,12 @@ This security policy is part of the Krynox Nexus project and is licensed under G
 
 ---
 
-## 🔄 Updates
-
 This security policy is reviewed and updated quarterly. Last update: 2026-05-15
-
-For questions about this security policy, contact: security@krynox-nexus.local
 
 ---
 
 <div align="center">
 
-**🔒 Security is not a feature, it's a requirement.**
-
-*Krynox Nexus Security Team*
+*🔒 Security is not a feature, it's a requirement.*
 
 </div>

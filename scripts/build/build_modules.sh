@@ -184,8 +184,8 @@ verify_modules() {
     
     local modules_found=0
     
-    find "$SRC_DIR" -name "*.ko" | while read -r module; do
-        ((modules_found++))
+    while read -r module; do
+        modules_found=$((modules_found + 1))
         
         # Check if module is valid
         if modinfo "$module" &>/dev/null; then
@@ -193,7 +193,7 @@ verify_modules() {
         else
             log_warn "✗ $(basename "$module") - Invalid or corrupted"
         fi
-    done
+    done < <(find "$SRC_DIR" -name "*.ko")
     
     if [ $modules_found -eq 0 ]; then
         log_error "No kernel modules were built!"
@@ -228,4 +228,3 @@ main() {
 
 main "$@"
 
-# Made with Bob

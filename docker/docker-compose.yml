@@ -107,4 +107,3 @@ volumes:
 # Clean up:
 #   docker-compose down -v
 
-# Made with Bob

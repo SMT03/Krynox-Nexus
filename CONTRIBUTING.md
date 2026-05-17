@@ -512,7 +512,6 @@ When adding features, update:
 - **GitHub Issues**: Bug reports and feature requests
 - **GitHub Discussions**: General questions and discussions
 - **Pull Requests**: Code contributions
-- **Security**: security@krynox-nexus.local (for vulnerabilities)
 
 ### Getting Help
 
@@ -545,7 +544,5 @@ Thank you for contributing to Krynox Nexus! Your efforts help make kernel module
 <div align="center">
 
 **Questions?** Open an issue or start a discussion on GitHub.
-
-**Security Issue?** Email security@krynox-nexus.local
 
 </div>

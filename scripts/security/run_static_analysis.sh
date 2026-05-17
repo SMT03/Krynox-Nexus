@@ -135,8 +135,11 @@ run_cppcheck() {
         2>&1 | tee "$cppcheck_txt"
     
     # Count issues
-    local error_count=$(grep -c "error:" "$cppcheck_txt" 2>/dev/null || echo "0")
-    local warning_count=$(grep -c "warning:" "$cppcheck_txt" 2>/dev/null || echo "0")
+    local error_count=$(grep -c "error:" "$cppcheck_txt" 2>/dev/null || true)
+    error_count=${error_count:-0}
+    
+    local warning_count=$(grep -c "warning:" "$cppcheck_txt" 2>/dev/null || true)
+    warning_count=${warning_count:-0}
     
     log_info "Cppcheck found: $error_count errors, $warning_count warnings"
     log_info "Cppcheck reports: $cppcheck_report, $cppcheck_txt"
@@ -189,9 +192,15 @@ generate_summary_report() {
     local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     
     # Count issues from each tool
-    local clang_issues=$(grep -c "warning:" "$REPORT_DIR/clang/analysis.txt" 2>/dev/null || echo "0")
-    local cppcheck_errors=$(grep -c "error:" "$REPORT_DIR/cppcheck/analysis.txt" 2>/dev/null || echo "0")
-    local cppcheck_warnings=$(grep -c "warning:" "$REPORT_DIR/cppcheck/analysis.txt" 2>/dev/null || echo "0")
+    local clang_issues=$(grep -c "warning:" "$REPORT_DIR/clang/analysis.txt" 2>/dev/null || true)
+    clang_issues=${clang_issues:-0}
+    
+    local cppcheck_errors=$(grep -c "error:" "$REPORT_DIR/cppcheck/analysis.txt" 2>/dev/null || true)
+    cppcheck_errors=${cppcheck_errors:-0}
+    
+    local cppcheck_warnings=$(grep -c "warning:" "$REPORT_DIR/cppcheck/analysis.txt" 2>/dev/null || true)
+    cppcheck_warnings=${cppcheck_warnings:-0}
+    
     local sparse_issues=$(wc -l < "$REPORT_DIR/sparse/analysis.txt" 2>/dev/null || echo "0")
     
     local total_issues=$((clang_issues + cppcheck_errors + cppcheck_warnings + sparse_issues))
@@ -236,32 +245,69 @@ EOF
     echo ""
 }
 
-generate_sarif_report() {
-    log_step "Generating SARIF report for GitHub integration..."
+convert_to_sarif() {
+    log_step "Converting tool outputs to SARIF format..."
     
-    local sarif_file="$REPORT_DIR/sarif/static_analysis.sarif"
+    local converter_dir="$SCRIPT_DIR/sarif_converters"
+    local sarif_dir="$REPORT_DIR/sarif"
     
-    cat > "$sarif_file" <<EOF
-{
-  "\$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-  "version": "2.1.0",
-  "runs": [
-    {
-      "tool": {
-        "driver": {
-          "name": "Krynox Nexus Static Analysis",
-          "informationUri": "https://github.com/krynox-nexus",
-          "version": "1.0.0",
-          "rules": []
-        }
-      },
-      "results": []
-    }
-  ]
-}
-EOF
+    # Ensure Python 3 is available
+    if ! command -v python3 &> /dev/null; then
+        log_error "Python 3 not found, skipping SARIF conversion"
+        return 1
+    fi
     
-    log_info "SARIF report generated: $sarif_file"
+    # Convert Clang output
+    if [ -f "$REPORT_DIR/clang/analysis.txt" ]; then
+        log_info "Converting Clang output to SARIF..."
+        python3 "$converter_dir/clang_converter.py" \
+            --input "$REPORT_DIR/clang/analysis.txt" \
+            --output "$sarif_dir/clang.sarif" \
+            --project-root "$PROJECT_ROOT" \
+            2>&1 | tee -a "$REPORT_DIR/sarif_conversion.log"
+        
+        if [ ${PIPESTATUS[0]} -eq 0 ]; then
+            log_info "✓ Clang SARIF conversion successful"
+        else
+            log_warn "✗ Clang SARIF conversion failed"
+        fi
+    fi
+    
+    # Convert Cppcheck output
+    if [ -f "$REPORT_DIR/cppcheck/analysis.xml" ]; then
+        log_info "Converting Cppcheck output to SARIF..."
+        python3 "$converter_dir/cppcheck_converter.py" \
+            --input "$REPORT_DIR/cppcheck/analysis.xml" \
+            --output "$sarif_dir/cppcheck.sarif" \
+            --project-root "$PROJECT_ROOT" \
+            2>&1 | tee -a "$REPORT_DIR/sarif_conversion.log"
+        
+        if [ ${PIPESTATUS[0]} -eq 0 ]; then
+            log_info "✓ Cppcheck SARIF conversion successful"
+        else
+            log_warn "✗ Cppcheck SARIF conversion failed"
+        fi
+    fi
+    
+    # Convert Sparse output
+    if [ -f "$REPORT_DIR/sparse/analysis.txt" ]; then
+        log_info "Converting Sparse output to SARIF..."
+        python3 "$converter_dir/sparse_converter.py" \
+            --input "$REPORT_DIR/sparse/analysis.txt" \
+            --output "$sarif_dir/sparse.sarif" \
+            --project-root "$PROJECT_ROOT" \
+            2>&1 | tee -a "$REPORT_DIR/sarif_conversion.log"
+        
+        if [ ${PIPESTATUS[0]} -eq 0 ]; then
+            log_info "✓ Sparse SARIF conversion successful"
+        else
+            log_warn "✗ Sparse SARIF conversion failed"
+        fi
+    fi
+    
+    # Count generated SARIF files
+    local sarif_count=$(find "$sarif_dir" -name "*.sarif" -type f 2>/dev/null | wc -l)
+    log_info "Generated $sarif_count SARIF file(s)"
 }
 
 check_exit_status() {
@@ -289,7 +335,7 @@ main() {
     run_cppcheck
     run_sparse
     generate_summary_report
-    generate_sarif_report
+    convert_to_sarif
     
     log_info "=== Analysis Complete ==="
     log_info "Reports available in: $REPORT_DIR"
@@ -303,4 +349,3 @@ main() {
 
 main "$@"
 
-# Made with Bob

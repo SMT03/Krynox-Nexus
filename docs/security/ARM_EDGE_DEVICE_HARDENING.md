@@ -1059,4 +1059,4 @@ The module already follows best practices:
 ---
 
 *This document is part of the Krynox Nexus Zero-Trust Kernel Module Hardening project.*  
-*Created by Bob - Security Architect & Kernel Engineer*
+*Created by Krynox Security Agent - Security Architect & Kernel Engineer*
