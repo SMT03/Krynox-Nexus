@@ -41,6 +41,11 @@ scan-results/
 *.sarif
 *.xml
 
+# Allow reports on demo branch
+!reports/
+!reports/index.html
+!reports/logo.png
+
 # IBM Bob CLI outputs
 bob-reports/
 .bob/
