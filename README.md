@@ -79,6 +79,8 @@ Krynox Nexus implements a **zero-trust security architecture** for kernel module
 
 ## 🚀 Quick Start
 
+> 📖 **New to the project?** Check out the comprehensive [Zero-Trust Developer Usage Guide](docs/security/USAGE_GUIDE.md) for step-by-step instructions on compilation, automated scanning, testing, report dashboarding, and Docker sandboxing!
+
 ### Prerequisites
 
 - Linux kernel 5.15 or higher
@@ -229,7 +231,8 @@ Krynox Nexus implements comprehensive SARIF (Static Analysis Results Interchange
 **View Results:**
 Navigate to the **Security** tab in your GitHub repository to view all SARIF findings in a unified dashboard. Each security tool uploads results to a separate category for easy filtering and analysis.
 
-For detailed SARIF implementation documentation, see:
+For detailed guides and implementation documentation, see:
+- 📖 [Zero-Trust Developer Usage Guide](docs/security/USAGE_GUIDE.md) *(Highly Recommended)*
 - [SARIF Implementation Plan](docs/security/SARIF_IMPLEMENTATION_PLAN.md)
 - [SARIF Quick Reference](docs/security/SARIF_QUICK_REFERENCE.md)
 - [SARIF Workflow Diagram](docs/security/SARIF_WORKFLOW_DIAGRAM.md)

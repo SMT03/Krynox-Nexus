@@ -1,0 +1,231 @@
+================================================================================
+                    KRYNOX NEXUS CODEBASE INDEX & ANALYSIS
+================================================================================
+Project: Krynox Nexus
+Version: 1.0.0
+Objective: Zero-Trust Linux Kernel Module Hardening and CI/CD Security Pipeline
+Date: May 17, 2026
+================================================================================
+
+This document provides a highly detailed, file-by-file index and analysis of the
+entire Krynox Nexus workspace. It outlines the architecture, secure design 
+philosophies, tool integrations, and test structures.
+
+---
+
+## 📂 1. WORKSPACE DIRECTORY HIERARCHY
+
+Krynox-Nexus/
+├── .github/                     <- CI/CD workflow configurations
+│   └── workflows/
+│       ├── codacy.yml
+│       └── security-scan.yml
+├── config/                      <- Tool-specific rulesets and filters
+│   ├── .clang-tidy
+│   └── .cppcheck
+├── docker/                      <- Isolated compilation and scanning containers
+│   ├── Dockerfile.builder
+│   ├── Dockerfile.scanner
+│   └── docker-compose.yml
+├── docs/                        <- Deep-dive security and implementation docs
+│   └── security/
+│       ├── ARM_EDGE_DEVICE_HARDENING.md
+│       ├── KERNEL_HARDENING_QUICK_REFERENCE.md
+│       ├── NEXT_STEPS_GUIDE.md
+│       ├── SARIF_DEPLOYMENT_GUIDE.md
+│       ├── SARIF_IMPLEMENTATION_PLAN.md
+│       ├── SARIF_IMPLEMENTATION_SUMMARY.md
+│       ├── SARIF_PROJECT_COMPLETION.md
+│       ├── SARIF_QUICK_REFERENCE.md
+│       └── SARIF_WORKFLOW_DIAGRAM.md
+├── reports/                     <- Scan logs, dashboard generation, and SARIF outputs
+│   ├── bob/
+│   ├── sarif/
+│   │   └── hardening.sarif
+│   ├── build-report.json
+│   ├── hardening_results.json
+│   ├── index.html
+│   ├── logo.png
+│   ├── sarif_conversion.log
+│   └── symbols-report.txt
+├── scripts/                     <- Automated build, setup, and analysis scripting
+│   ├── build/
+│   │   └── build_modules.sh
+│   ├── setup/
+│   │   └── install_tools.sh
+│   ├── security/
+│   │   ├── sarif_converters/
+│   │   │   ├── README.md
+│   │   │   ├── __init__.py
+│   │   │   ├── base_converter.py
+│   │   │   ├── bob_converter.py
+│   │   │   ├── clang_converter.py
+│   │   │   ├── cppcheck_converter.py
+│   │   │   ├── cwe_mappings.py
+│   │   │   ├── hardening_converter.py
+│   │   │   ├── requirements.txt
+│   │   │   └── sparse_converter.py
+│   │   ├── generate_dashboard.py
+│   │   ├── run_ibm_bob.sh
+│   │   ├── run_static_analysis.sh
+│   │   ├── test_sarif_converters.py
+│   │   └── verify_kernel_hardening.sh
+│   └── deploy_sarif.sh
+├── src/                         <- Kernel module source code (Secure vs. Vulnerable)
+│   ├── examples/
+│   │   ├── buffer_overflow_secure.c
+│   │   └── hello_secure.c
+│   ├── vulnerable/
+│   │   ├── buffer_overflow.c
+│   │   └── use_after_free.c
+│   ├── Kbuild
+│   └── Makefile
+├── tests/                       <- Integrated validation and unit tests
+│   ├── fixtures/
+│   │   ├── bad_input_payload.txt
+│   │   └── good_input_payload.txt
+│   ├── integration/
+│   │   ├── test_pipeline.py
+│   │   └── requirements.txt
+│   └── unit/
+│       ├── test_secure_modules.c
+│       └── INSTALL.md
+├── AGENTS.md                    <- Primary security agent role and rules definition
+├── CONTRIBUTING.md              <- Developer guides and contribution standards
+├── LICENSE                      <- Project distribution license
+├── Makefile                     <- Core automation entry point
+├── PROJECT_ACTIVITY_LOG.txt     <- Audit log of changes and milestones
+├── README.md                    <- Executive project readme
+└── SECURITY.md                  <- Vulnerability disclosure and security policies
+
+---
+
+## 🛠️ 2. DETAILED FILE-BY-FILE EXPLANATION
+
+### 📁 Root Directory Configuration Files
+*   **[Makefile](file:///home/symtuh/Documents/Projects/Krynox-Nexus/Makefile)**:
+    The brain of local orchestration. Offers intuitive targets to standardise building, testing, cleaning, and scanning.
+    Key targets:
+    *   `make build`: Spawns module builder shell scripts with security-enhanced compiler flags (`-fstack-protector-strong`, `-fno-strict-overflow`, etc.).
+    *   `make test-unit`: Compiles and runs `cmocka` unit tests with code coverage (`gcov`) support.
+    *   `make test-integration`: Executes the `pytest` test suite to validate end-to-end pipeline conversions.
+    *   `make security-scan`: Standard static analysis and architecture scan runner.
+    *   `make reports`: Auto-generates the static premium dashboard page at `reports/index.html`.
+    *   `make docker-build` / `make docker-scan`: Enables isolated multi-stage containerized validations.
+*   **[AGENTS.md](file:///home/symtuh/Documents/Projects/Krynox-Nexus/AGENTS.md)**:
+    Defines the zero-trust paradigm rules, active agent responsibilities, operational boundaries, and cybersecurity standards for the lead security engineer agent.
+*   **[PROJECT_ACTIVITY_LOG.txt](file:///home/symtuh/Documents/Projects/Krynox-Nexus/PROJECT_ACTIVITY_LOG.txt)**:
+    A sequential audit trail documenting major accomplishments, completed features, refactorings, and milestone releases.
+*   **[README.md](file:///home/symtuh/Documents/Projects/Krynox-Nexus/README.md)**:
+    The master guide detailing the quick start workflow, design architecture, system prerequisites, and status badges.
+*   **[SECURITY.md](file:///home/symtuh/Documents/Projects/Krynox-Nexus/SECURITY.md)**:
+    Establishes zero-disclosure policies, vulnerability reporting channels, and the remediation lifecycle for kernel drivers.
+
+---
+
+### 📁 .github/workflows/ (CI/CD Automations)
+*   **[security-scan.yml](file:///home/symtuh/Documents/Projects/Krynox-Nexus/.github/workflows/security-scan.yml)**:
+    The flagship automation pipeline. On every code push or pull request to the `main` branch, it:
+    1. Sets up the execution runner.
+    2. Installs required system dependencies (Clang, Cppcheck, Sparse, IBM Bob, etc.).
+    3. Triggers static analyses, configuration validation, and architectural checks.
+    4. Automatically runs the Python converter scripts to generate SARIF format outputs.
+    5. Safely uploads the SARIF reports to the GitHub Security Tab for deep code scanning integration.
+*   **[codacy.yml](file:///home/symtuh/Documents/Projects/Krynox-Nexus/.github/workflows/codacy.yml)**:
+    Runs Codacy security and style static analysis on changed code to enforce standard code-quality gates.
+
+---
+
+### 📁 config/ (Static Analysis Filters & Configurations)
+*   **[.clang-tidy](file:///home/symtuh/Documents/Projects/Krynox-Nexus/config/.clang-tidy)**:
+    Defines rules for Clang-Tidy static code checks. Enforces strict pointer handling, static analyses, and memory boundary warnings specific to kernel programming.
+*   **[.cppcheck](file:///home/symtuh/Documents/Projects/Krynox-Nexus/config/.cppcheck)**:
+    Configures Cppcheck filters and severity levels to target memory safety, undefined behaviour, and style checks while suppressing standard library warnings inapplicable to raw kernel modules.
+
+---
+
+### 📁 docker/ (Containerized DevSecOps Infrastructure)
+*   **[Dockerfile.builder](file:///home/symtuh/Documents/Projects/Krynox-Nexus/docker/Dockerfile.builder)**:
+    A clean Docker container containing compiler tools and the matching Linux kernel headers. Provides a reliable, compiler-independent sandboxed build environment.
+*   **[Dockerfile.scanner](file:///home/symtuh/Documents/Projects/Krynox-Nexus/docker/Dockerfile.scanner)**:
+    Packages all required static analysis tools (Clang, Cppcheck, Sparse, IBM Bob, Python converters). Used for isolated, repeatable out-of-band security runs.
+*   **[docker-compose.yml](file:///home/symtuh/Documents/Projects/Krynox-Nexus/docker/docker-compose.yml)**:
+    Orchestrates the build and scanner containers to run complex security scanning pipelines without installing native packages.
+
+---
+
+### 📁 docs/security/ (Deep Hacking & Protection Guides)
+*   **[ARM_EDGE_DEVICE_HARDENING.md](file:///home/symtuh/Documents/Projects/Krynox-Nexus/docs/security/ARM_EDGE_DEVICE_HARDENING.md)**:
+    A detailed blueprint covering threat vectors, trusted execution environments (TEE), memory protection units (MPU), secure boot configurations, and physical security parameters for ARM microarchitectures.
+*   **[KERNEL_HARDENING_QUICK_REFERENCE.md](file:///home/symtuh/Documents/Projects/Krynox-Nexus/docs/security/KERNEL_HARDENING_QUICK_REFERENCE.md)**:
+    A handy reference detailing sysctl rules, GRUB boot param restrictions, and compile-time configurations (`CONFIG_FORTIFY_SOURCE`, `CONFIG_RANDOMIZE_BASE`, etc.) to mitigate kernel exploitation.
+*   **[SARIF_PROJECT_COMPLETION.md](file:///home/symtuh/Documents/Projects/Krynox-Nexus/docs/security/SARIF_PROJECT_COMPLETION.md)**:
+    A master sign-off document summarizing the complete transition of Krynox Nexus security scanning to the industry-standard SARIF format.
+
+---
+
+### 📁 scripts/ (Tooling, Scanners & Converters)
+*   **[deploy_sarif.sh](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/deploy_sarif.sh)**:
+    A bash helper to upload generated SARIF results to GitHub via the REST API or GitHub CLI.
+*   **[setup/install_tools.sh](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/setup/install_tools.sh)**:
+    Installs build-essential, clang, cppcheck, sparse, cmocka, lcov, and python dependencies locally on Fedora/RedHat systems.
+*   **[build/build_modules.sh](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/build/build_modules.sh)**:
+    Drives module compilation, checking that security compiler flags are strictly enforced to counter binary-level exploitation.
+*   **[security/run_static_analysis.sh](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/run_static_analysis.sh)**:
+    Executes Clang Static Analyzer, Cppcheck, and Sparse sequentially. If findings are found, they are piped through Python converters to produce SARIF output.
+*   **[security/run_ibm_bob.sh](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/run_ibm_bob.sh)**:
+    Runs IBM Bob CLI, which evaluates the structural and architectural parameters of the module code to detect higher-level design vulnerabilities.
+*   **[security/verify_kernel_hardening.sh](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/verify_kernel_hardening.sh)**:
+    Queries `/boot/config-*` or `/proc/config.gz` to check if protective kernel features (e.g. stack protector, page table isolation) are compiled into the system.
+*   **[security/generate_dashboard.py](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/generate_dashboard.py)**:
+    Gathers all SARIF, Cppcheck, IBM Bob, and coverage inputs, compiling them into a visually stunning, responsive single-page HTML report (`reports/index.html`).
+
+#### 📁 scripts/security/sarif_converters/ (Custom Python Normalization Engines)
+*   **[base_converter.py](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/sarif_converters/base_converter.py)**:
+    An abstract class representing the converter framework. It defines the `Finding` dataclass schema, provides path resolution logic, extracts source code snippets to display context directly in findings, maps severity keywords, and handles OASIS SARIF 2.1.0 schema generation.
+*   **[cwe_mappings.py](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/sarif_converters/cwe_mappings.py)**:
+    A local mapping dictionary pairing kernel-specific vulnerabilities (e.g. use-after-free, double free, bounds overflow) to their official Common Weakness Enumeration IDs (CWE-119, CWE-416, etc.) and severity classes.
+*   **[clang_converter.py](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/sarif_converters/clang_converter.py)**:
+    Regex-parses standard text output from the Clang Static Analyzer to extract file path, line, column, and warning messages into SARIF.
+*   **[cppcheck_converter.py](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/sarif_converters/cppcheck_converter.py)**:
+    Parses Cppcheck XML reports, normalizing element tags, severity levels, and embedding reference rules.
+*   **[sparse_converter.py](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/sarif_converters/sparse_converter.py)**:
+    Extracts kernel-specific sparse errors (such as mismatched locking contexts, dereferencing `__user` pointers in kernel space, and incorrect type casting).
+*   **[bob_converter.py](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/sarif_converters/bob_converter.py)**:
+    Transforms architectural findings from the IBM Bob JSON structure into valid SARIF records.
+*   **[hardening_converter.py](file:///home/symtuh/Documents/Projects/Krynox-Nexus/scripts/security/sarif_converters/hardening_converter.py)**:
+    Converts failed self-protection kernel parameters into actionable, high-priority SARIF items containing remediation advice.
+
+---
+
+### 📁 src/ (Kernel Module Implementations)
+*   **[src/Makefile](file:///home/symtuh/Documents/Projects/Krynox-Nexus/src/Makefile)** and **[src/Kbuild](file:///home/symtuh/Documents/Projects/Krynox-Nexus/src/Kbuild)**:
+    Define module building targets for the kbuild engine, mapping the final binaries `buffer_overflow.ko`, `use_after_free.ko`, `buffer_overflow_secure.ko`, and `hello_secure.ko`.
+
+#### Intentionally Vulnerable Modules (Test Vector validation)
+*   **[vulnerable/buffer_overflow.c](file:///home/symtuh/Documents/Projects/Krynox-Nexus/src/vulnerable/buffer_overflow.c)**:
+    Demonstrates stack overflows (via raw `strcpy`), heap memory boundary violations (fixed allocation under `SMALL_BUFFER_SIZE` with unbounded `memcpy`), and insecure format string exposures in kernel printk logs.
+*   **[vulnerable/use_after_free.c](file:///home/symtuh/Documents/Projects/Krynox-Nexus/src/vulnerable/use_after_free.c)**:
+    Implements UAF routines (calling `kfree` on structure buffers and subsequently printing/mutating their members), double free violations (calling `kfree` twice on the same address), dangling pointers, and memory leaks.
+
+#### Hardened & Secure Reference Implementations
+*   **[examples/buffer_overflow_secure.c](file:///home/symtuh/Documents/Projects/Krynox-Nexus/src/examples/buffer_overflow_secure.c)**:
+    A secure replacement module. Implements robust bounds checking, safe string buffers (using `strscpy`), validation limits on user-controlled sizes before allocation, and proper cleanups on write-handlers to negate stack and heap overflows.
+*   **[examples/hello_secure.c](file:///home/symtuh/Documents/Projects/Krynox-Nexus/src/examples/hello_secure.c)**:
+    A secure entry-level module showing proper structure initializations, proc boundaries, and compliant permissions.
+
+---
+
+### 📁 tests/ (Validation & Integration Testing Suites)
+*   **[unit/test_secure_modules.c](file:///home/symtuh/Documents/Projects/Krynox-Nexus/tests/unit/test_secure_modules.c)**:
+    A `cmocka` mock test suite compiled with gcov profiling. Validates buffer copies, string formatting boundary constraints, and memory operations on mocked drivers to confirm security invariants.
+*   **[integration/test_pipeline.py](file:///home/symtuh/Documents/Projects/Krynox-Nexus/tests/integration/test_pipeline.py)**:
+    A rigorous end-to-end integration validation framework. Running in pytest, it dynamically:
+    1. Tests individual SARIF converter implementations with mocked and live payloads.
+    2. Validates generated output compliance against the official OASIS SARIF JSON schema.
+    3. Confirms relative path operations, line/column bindings, and CWE mapping lookups.
+    4. Simulates end-to-end scanner runs to verify robust fault tolerance.
+
+================================================================================
+                    [END OF KRYNOX NEXUS CODEBASE INDEX]
+================================================================================
